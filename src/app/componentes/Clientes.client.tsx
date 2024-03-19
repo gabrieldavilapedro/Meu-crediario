@@ -1,11 +1,11 @@
 'use client';
 import React, { useState } from 'react';
-import ICliente from '../interfaces/cliente';
+import ICliente from '../interfaces/Icliente';
 import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
 
 function Clientes() {
-  const [clientes, setClientes] = useState<ICliente[]>(JSON.parse(localStorage.getItem('clientes') || '[]'));
+  const [clientes, setClientes] = useState<{[key:string]:ICliente}>(JSON.parse(localStorage.getItem('clientes') || '{}'));
   const [name, setName] = useState('');
   const [telefone, setTelefone] = useState('');
 
@@ -19,7 +19,7 @@ function Clientes() {
     const id = uuidv4();
     const dataDeCadastro = new Date().toLocaleDateString();
 
-    const newClientes = [...clientes, {id, name, telefone, dataDeCadastro }];
+    const newClientes = {...clientes, [id]: { name, telefone, dataDeCadastro }};
     setClientes(newClientes);
     localStorage.setItem('clientes', JSON.stringify(newClientes));
     setName('');
@@ -58,12 +58,12 @@ function Clientes() {
       <div>
         <h2>Clientes cadastrados</h2>
         <div>
-          {clientes.map((cliente, index) => (
-            <div key={index}>
+          {Object.entries(clientes).map(([uuid, cliente]) => (
+            <div key={uuid}>
               <p>Nome: {cliente.name}</p>
               <p>Telefone: {cliente.telefone}</p>
               <p>Data de cadastro: {cliente.dataDeCadastro}</p>
-              <Link href={`/conta/${cliente.id}`}>
+              <Link href={`/conta/${uuid}`}>
                 <button>
                   Acessar conta
                 </button>
