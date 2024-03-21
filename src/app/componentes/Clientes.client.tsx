@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import ICliente from '../interfaces/Icliente';
+import ICliente from '../interfaces/ICliente';
 import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
 
@@ -63,7 +63,7 @@ function Clientes() {
               <p>Nome: {cliente.name}</p>
               <p>Telefone: {cliente.telefone}</p>
               <p>Data de cadastro: {cliente.dataDeCadastro}</p>
-              <Link href={`/conta/${uuid}`}>
+              <Link href={`/client/${uuid}`}>
                 <button>
                   Acessar conta
                 </button>
