@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Entry, Pagamento, Venda } from '../types/Entry';
 import Link from 'next/link';
+import styles from '../styles/conta.styles.module.css'
 
 
 function Conta({ id } : { id: string }) {
@@ -70,14 +71,6 @@ function Conta({ id } : { id: string }) {
     window.location.href = '/';
   }
 
-  const clearEntries = () => {
-    const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
-    if (clientes[id]) {
-      clientes[id].entries = {};
-      localStorage.setItem('clientes', JSON.stringify(clientes));
-    }
-  }
-
   const valorFinal = Object.entries(entries).reduce((acc, [id, entry]) => {
     if (entry.type === 'pagamento') {
       return acc - entry.valor;
@@ -87,25 +80,24 @@ function Conta({ id } : { id: string }) {
   }
   , 0);
 
-
   return (
-    <div>
-      <div>
+    <div className={styles.container}>
+      <div className={styles.divButton}>
         <div>
         <Link href={'/'}>
-          <button>
+          <button className={styles.submitButton}>
             Pagina inicial
           </button>
         </Link>
         </div>
         <div>
-          <button onClick={deleteClient}>
+          <button className={styles.submitButton} onClick={deleteClient}>
             Apagar usuário
           </button>
         </div>
       </div>
-      <div>
-        <h1>Nova venda</h1>
+      <div className={styles.formGroup}>
+        <h1 className={styles.h1Center}>Nova venda</h1>
         <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="ProductName">Nome do produto:</label>
@@ -138,24 +130,25 @@ function Conta({ id } : { id: string }) {
                   value={quantidade}
                   required/>
               </div>
-              <button>confirmar</button>
+              <button className={styles.submitButton}>confirmar</button>
             </div>
         </form>
         <form onSubmit={handleConfirm}>
-          <div>
-            <h2>Resumo da venda</h2>
+          <div className={styles.saleSummary}>
+            <h1 className={styles.h1Center}>Resumo da venda</h1>
             <p>Produto: {ProductName}</p>
             <p>Quantidade: {quantidade}</p>
-            <p>Valor total: {valorTotal}</p>
+            <p>Valor total: {`R$${valorTotal}`}</p>
           </div>
           <button 
             type="submit"
+            className={styles.submitButton}
             disabled={ProductName === '' || valorTotal === 0 || quantidade === 0}
           >Confirmar venda</button>
         </form>
       </div>
-      <div>
-        <h1>Novo pagamentos</h1>
+      <div className={styles.formGroup}>
+        <h1 className={styles.h1Center}>Novo pagamentos</h1>
         <form
           onSubmit={handlePay}
         >
@@ -169,16 +162,16 @@ function Conta({ id } : { id: string }) {
             value={valorPagamento}
             required/>
           </div>
-          <button>Confirmar pagamento</button>
+          <button className={styles.submitButton}>Confirmar pagamento</button>
         </form>
       </div>
-      <div>
+      <div className={styles.entryList}>
         <h2>extrato</h2>
         <ul>
           {Object.entries(entries).map(([id, entry]) => {
             if (entry.type === 'pagamento') {
               return (
-                <li key={id}>
+                <li key={id} className={styles.payment}>
                   <p>Pagamento: {entry.valor}</p>
                   <p>Data: {entry.date}</p>
                 </li>
@@ -186,7 +179,7 @@ function Conta({ id } : { id: string }) {
             }
             let venda = entry as Venda;
             return (
-              <li key={id}>
+              <li key={id} className={styles.sale}>
                 <p>Produto: {venda.ProductName}</p>
                 <p>Valor: {venda.valor}</p>
                 <p>Quantidade: {venda.quantidade}</p>
@@ -196,7 +189,7 @@ function Conta({ id } : { id: string }) {
             );
           })}
             <li>
-              <p>Valor final: {valorFinal}</p>
+              <p>Valor final: {`R$${valorFinal}`}</p>
             </li>
         </ul>
       </div>
