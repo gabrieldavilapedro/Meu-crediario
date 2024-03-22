@@ -1,32 +1,37 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import IVenda from '../interfaces/IVenda';
+import { v4 as uuidv4 } from 'uuid';
+import { Entry, Pagamento, Venda } from '../types/Entry';
+
 
 function Conta({ id } : { id: string }) {
-  const [vendas, setVendas] = useState<{[key:string]:IVenda}>({});
+  const [entries, setEntries] = useState<{[key:string]:Entry}>({});
   const [ProductName, setProductName] = useState('');
   const [valor, setValor] = useState(0);
+  const [valorPagamento, setValorPagamento] = useState(0);
   const [quantidade, setQuantidade] = useState(0);
   const [valorTotal, setvalorTotal] = useState(0);
-  const [idVenda, setIdVenda] = useState(0);
 
   useEffect(() => {
-    if (id) {
       const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
       const cliente = clientes[id];
-      if (cliente && cliente.vendas) {
-        setVendas(cliente.vendas);
+      if (cliente && cliente.entries) {
+        setEntries(cliente.entries);
       }
-    }
   }, [id]);
+
+  useEffect(() => {
+    const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
+  
+    if (clientes[id]) {
+      clientes[id].entries = entries;
+    }
+  
+    localStorage.setItem('clientes', JSON.stringify(clientes));
+  }, [id,entries]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const target = event.target as typeof event.target & {
-      ProductName: { value: string };
-      valor: { value: number };
-      quantidade: { value: number };
-    };
 
     const valorTotal = valor * quantidade;
     setvalorTotal(valorTotal);
@@ -35,28 +40,26 @@ function Conta({ id } : { id: string }) {
   const handleConfirm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   
-    const dataDeVenda = new Date().toLocaleDateString();
-    const idIncrement = idVenda + 1;
-    setIdVenda(idIncrement);
-    const newVenda = { ProductName, valor, quantidade, dataDeVenda ,valorTotal };
-    setVendas({...vendas, [idIncrement]: newVenda});
-  
-    const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
-  
-    if (clientes[id]) {
-      if (clientes[id].vendas) {
-        clientes[id].vendas.push(newVenda);
-      } else {
-        clientes[id].vendas = [newVenda];
-      }
-    }
-  
-    localStorage.setItem('clientes', JSON.stringify(clientes));
-  
+    const date = new Date().toLocaleDateString();
+    const id = uuidv4();
+    const type = 'venda';
+    const newEntry:Venda = { ProductName, valor, quantidade, date, type };
+    setEntries({...entries, [id]: newEntry});
     setProductName('');
     setValor(0);
     setQuantidade(0);
     setvalorTotal(0);
+  }
+
+  const handlePagamento = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+  
+    const date = new Date().toLocaleDateString();
+    const id = uuidv4();
+    const type = 'pagamento';
+    const newPagamento: Pagamento = { valor: valorPagamento, date, type };
+    setEntries({...entries, [id]: newPagamento});
+    setValorPagamento(0);
   }
 
   return (
@@ -85,19 +88,18 @@ function Conta({ id } : { id: string }) {
             required/>
           </div>
               <div>
-
                 <div>
-            <label htmlFor="quantidade">Quantidade:</label>
-            <input 
-            type="number" 
-            id="quantidade" 
-            name="quantidade" 
-            onChange={(e) => setQuantidade(parseInt(e.target.value))}
-            value={quantidade}
-            required/>
-          </div>
-            <button>confirmar</button>
+                  <label htmlFor="quantidade">Quantidade:</label>
+                  <input 
+                  type="number" 
+                  id="quantidade" 
+                  name="quantidade" 
+                  onChange={(e) => setQuantidade(parseInt(e.target.value))}
+                  value={quantidade}
+                  required/>
               </div>
+              <button>confirmar</button>
+            </div>
         </form>
         <form onSubmit={handleConfirm}>
           <div>
@@ -113,17 +115,44 @@ function Conta({ id } : { id: string }) {
         </form>
       </div>
       <div>
-        <h2>Vendas</h2>
+        <h1>Novo pagamentos</h1>
+        <form
+          onSubmit={handlePagamento}
+        >
+          <div>
+            <label htmlFor="valor">Valor</label>
+            <input 
+            type="number" 
+            id="valor" 
+            name="valor"
+            onChange={(e) => setValorPagamento(parseFloat(e.target.value))}
+            value={valorPagamento}
+            required/>
+          </div>
+          <button>Confirmar pagamento</button>
+        </form>
+      </div>
+      <div>
+        <h2>extrato</h2>
         <ul>
-          {vendas && Object.keys(vendas).map((vendaId) => {
-            const venda = vendas[vendaId];
+          {Object.entries(entries).map(([id, entry]) => {
+            if (entry.type === 'pagamento') {
+              
+              return (
+                <li key={id}>
+                  <p>Pagamento: {entry.valor}</p>
+                  <p>Data: {entry.date}</p>
+                </li>
+              );
+            }
+            let venda = entry as Venda;
             return (
-              <li key={vendaId}>
+              <li key={id}>
                 <p>Produto: {venda.ProductName}</p>
                 <p>Valor: {venda.valor}</p>
                 <p>Quantidade: {venda.quantidade}</p>
-                <p>Data: {venda.dataDeVenda}</p>
-                <p>Valor total: {venda.valorTotal}</p>
+                <p>Data: {venda.date}</p>
+                <p>Valor total: {venda.valor * venda.quantidade}</p>
               </li>
             );
           })}

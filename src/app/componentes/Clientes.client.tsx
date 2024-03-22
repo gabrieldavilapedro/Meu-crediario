@@ -1,11 +1,11 @@
 'use client';
 import React, { useState } from 'react';
-import ICliente from '../interfaces/ICliente';
+import { Cliente}  from '../types/Cliente';
 import { v4 as uuidv4 } from 'uuid';
 import Link from 'next/link';
 
 function Clientes() {
-  const [clientes, setClientes] = useState<{[key:string]:ICliente}>(JSON.parse(localStorage.getItem('clientes') || '{}'));
+  const [clientes, setClientes] = useState<{[key:string]:Cliente}>(JSON.parse(localStorage.getItem('clientes') || '{}'));
   const [name, setName] = useState('');
   const [telefone, setTelefone] = useState('');
 
