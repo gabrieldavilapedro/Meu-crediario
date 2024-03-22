@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Entry, Pagamento, Venda } from '../types/Entry';
+import Link from 'next/link';
 
 
 function Conta({ id } : { id: string }) {
@@ -23,11 +24,10 @@ function Conta({ id } : { id: string }) {
   useEffect(() => {
     const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
   
-    if (clientes[id]) {
+    if (clientes[id] && Object.keys(entries).length > 0) {
       clientes[id].entries = entries;
+      localStorage.setItem('clientes', JSON.stringify(clientes));
     }
-  
-    localStorage.setItem('clientes', JSON.stringify(clientes));
   }, [id,entries]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -51,7 +51,7 @@ function Conta({ id } : { id: string }) {
     setvalorTotal(0);
   }
 
-  const handlePagamento = (event: React.FormEvent<HTMLFormElement>) => {
+  const handlePay = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
   
     const date = new Date().toLocaleDateString();
@@ -62,8 +62,48 @@ function Conta({ id } : { id: string }) {
     setValorPagamento(0);
   }
 
+  const deleteClient = () => {
+    const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
+    delete clientes[id];
+    localStorage.setItem('clientes', JSON.stringify(clientes));
+
+    window.location.href = '/';
+  }
+
+  const clearEntries = () => {
+    const clientes = JSON.parse(localStorage.getItem('clientes') || '{}');
+    if (clientes[id]) {
+      clientes[id].entries = {};
+      localStorage.setItem('clientes', JSON.stringify(clientes));
+    }
+  }
+
+  const valorFinal = Object.entries(entries).reduce((acc, [id, entry]) => {
+    if (entry.type === 'pagamento') {
+      return acc - entry.valor;
+    }
+    let venda = entry as Venda;
+    return acc + (venda.valor * venda.quantidade);
+  }
+  , 0);
+
+
   return (
     <div>
+      <div>
+        <div>
+        <Link href={'/'}>
+          <button>
+            Pagina inicial
+          </button>
+        </Link>
+        </div>
+        <div>
+          <button onClick={deleteClient}>
+            Apagar usuário
+          </button>
+        </div>
+      </div>
       <div>
         <h1>Nova venda</h1>
         <form onSubmit={handleSubmit}>
@@ -117,7 +157,7 @@ function Conta({ id } : { id: string }) {
       <div>
         <h1>Novo pagamentos</h1>
         <form
-          onSubmit={handlePagamento}
+          onSubmit={handlePay}
         >
           <div>
             <label htmlFor="valor">Valor</label>
@@ -137,7 +177,6 @@ function Conta({ id } : { id: string }) {
         <ul>
           {Object.entries(entries).map(([id, entry]) => {
             if (entry.type === 'pagamento') {
-              
               return (
                 <li key={id}>
                   <p>Pagamento: {entry.valor}</p>
@@ -156,6 +195,9 @@ function Conta({ id } : { id: string }) {
               </li>
             );
           })}
+            <li>
+              <p>Valor final: {valorFinal}</p>
+            </li>
         </ul>
       </div>
     </div>
