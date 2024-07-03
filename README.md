@@ -5,7 +5,13 @@ Meu crediario é uma aplicação desenvolvida usando react e next.js, usa LocalS
 
 ## Rodando localmente 
 
-Primeiro, execute o servidor de desenvolvimento:
+Primeiro instale as dependências:
+
+`````` bash
+npm install
+``````
+
+Execute o servidor de desenvolvimento:
 
 ```bash
 npm run dev
